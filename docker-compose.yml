@@ -151,7 +151,34 @@ services:
     ports:
       - 4000:4000 # my custom port
     mem_limit: ${MEM_LIMIT}
-     
+
+
+  apache:
+    image: httpd:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./apache/logs:/usr/local/apache2/logs
+    container_name: apache
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "15m"
+        max-file: "3"
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    user: "root"
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    container_name: filebeat
+    depends_on:
+      - apache
+    restart: always
+  
+
+   
 volumes:
   certs:
     driver: local
